@@ -1,0 +1,90 @@
+1.Table for products - including title, price, description, date of creation.
+
+CREATE TABLE products (product_id INT, title VARCHAR(20), price DECIMAL(10,2), description VARCHAR(40), date_of_creation DATETIME);
+
+
+2.Table for users - including first name, last name, address, country code as a two characater string (see ISO-3166-1) BG, US, UK, MK.
+
+CREATE TABLE users (user_id INT PRIMARY KEY,first_name VARCHAR(20), last_name VARCHAR(20), address VARCHAR(30), country_code VARCHAR(2));
+
+
+3.Table for orders (including order date, user and amount to be paid) and table for their orderlines (the ordered quantity, single price and computed price).
+
+CREATE TABLE orders (user_id INT, order_date DATE, to_be_paid INT,order_info VARCHAR(30));
+CREATE TABLE orderlines (sold_to_user_id INT,product_id INT, ordered_quantity INT, single_price INT, computed_price INT);
+ALTER TABLE orders ADD FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL;
+ALTER TABLE orderlines ADD FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE SET NULL;
+ALTER TABLE orderlines ADD FOREIGN KEY (sold_to_user_id) REFERENCES users(user_id) ON DELETE SET NULL;
+
+
+4.Initializing the products, users and orders table with content (INSERT statements with sample data). Please use multi-line INSERT statements.
+
+INSERT INTO users VALUES(101,'Michael','Smith','Brighton, Long Road 64','UK');
+INSERT INTO users VALUES(102,'David','Scott','London, Cecil Road 64','UK');
+INSERT INTO users VALUES(103,'Ivan','Tirolov','Plovdiv, Romen Rolan st. 4','BG');
+INSERT INTO users VALUES(104,'Krasen','Tushev','Sofia, Vitoshka 5','BG');
+INSERT INTO users VALUES(105,'Lozan','Koleyski','Skopie, Bulgaria street 78','MK');
+INSERT INTO users VALUES(106,'Tom','Clinton','Arizona, Grand Road 54','US');
+INSERT INTO products (product_id,title, price, description, date_of_creation) VALUES (1,'Toilet Paper',2,'Made of recycled paper', NOW());
+INSERT INTO products (product_id,title, price, description, date_of_creation) VALUES (2,'Microwave',99,'With new defrost options', NOW());
+INSERT INTO products (product_id,title, price, description, date_of_creation) VALUES (3,'Vacuum Cleener',49,'The home`s best friend', NOW());
+INSERT INTO products (product_id,title, price, description, date_of_creation) VALUES (4,'IPhone XS',899,'Experience like never before', NOW());
+INSERT INTO products (product_id,title, price, description, date_of_creation) VALUES (5,'Washing Machine',699,'Lives longer with Calgon', NOW());
+INSERT INTO products (product_id,title, price, description, date_of_creation) VALUES (6,'TV',1599,'With new smart tehnology', NOW());
+INSERT INTO products (product_id,title, price, description, date_of_creation) VALUES (7,'DVD-Player',120,'HD graphics tehnology', NOW());
+INSERT INTO products (product_id,title, price, description, date_of_creation) VALUES (8,'Mystery Box',29,'You never know what`s inside', NOW());
+INSERT INTO orders VALUES(104,'2018-05-21', 4393, 'Krasen Tushev`s orders');
+INSERT INTO orders VALUES(106,'2018-12-30', 598, 'Tom Clinton`s orders');
+INSERT INTO orders VALUES(103,'2019-03-04', 1468, 'Ivan Tirolov`s orders');
+INSERT INTO orders VALUES(101,'2019-04-09', 5630, 'Michael Smith`s orders');
+INSERT INTO orders VALUES(102,'2019-05-10', 433, 'David Scott`s orders');
+INSERT INTO orders VALUES(101,'2019-06-21', 90, 'Michael Smith`s orders');
+INSERT INTO orderlines VALUES(106,2,6,99, 599);
+INSERT INTO orderlines VALUES(101,3,9,49, 449);
+INSERT INTO orderlines VALUES(104,4,2,899, 1799);
+INSERT INTO orderlines VALUES(105,1,100,2, 250);
+INSERT INTO orderlines VALUES(101,8,23,29, 667);
+INSERT INTO orderlines VALUES(102,1,200,2, 400);
+INSERT INTO orderlines VALUES(103,7,3,120, 360);
+INSERT INTO orderlines VALUES(105,6,1,1599, 1599);
+
+
+5.Printing the list of products, created during the last hour.
+
+SELECT COUNT(*) AS count_of_new_made_products FROM products WHERE date_of_creation >= DATE_SUB(NOW(),INTERVAL 1 HOUR);
+
+
+6.Printing the list of users sorted by country code.
+
+SELECT * FROM users ORDER BY country_code;
+
+
+7.Printing a simple list of orders (no order lines).
+
+SELECT order_info FROM orders;
+
+
+8.Printing the list of orderlines with combined order information and user information.
+
+SELECT orderlines.sold_to_user_id, orders.order_date, orders.order_info FROM orderlines JOIN orders ON orderlines.sold_to_user_id = orders.user_id;
+SELECT orderlines.sold_to_user_id, users.first_name, users.last_name, users.country_code FROM orderlines JOIN users ON orderlines.sold_to_user_id = users.user_id;
+
+
+9.Printing the list of users with number of orders they have placed.
+
+SELECT COUNT(sold_to_user_id), sold_to_user_id FROM orderlines GROUP BY sold_to_user_id;
+---------Tuk mislq variant s join za da moga da dobavq i users no ne znam kak da go suchetaq s COUNT--------
+SELECT sold_to_user_id, users.first_name FROM orderlines JOIN users ON sold_to_user_id = users.user_id;
+
+
+10.Printing the list of users with a column of how much money they have spent in this shop.
+
+SELECT orderlines.computed_price, users.* FROM orderlines JOIN users ON orderlines.sold_to_user_id = users.user_id;
+------------tuk iskam da grupiram po id no ne stava na edin red, iskam da kombiniram dolnata s gornata------
+SELECT SUM(computed_price) FROM orderlines GROUP BY sold_to_user_id;
+
+
+
+
+
+
